@@ -22,7 +22,6 @@ class CreatePromptRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "prompt" => ["required", "string"]
         ];
     }
 }

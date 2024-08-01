@@ -11,57 +11,78 @@
 @push("scripts")
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    document.getElementById('chat-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const prompt = document.getElementById('prompt');
-        const chatLog = document.getElementById('chat-log');
-        const loader = document.getElementById('loader');
-        const askButton = document.getElementById('ask-button');
+    document.addEventListener('DOMContentLoaded', function() {
+        const conversationHistory = [
+            {
+                "text": "You are an AI assistant for business research. Your responses should be informative and concise.",
+                "role": "system"
+            }
+        ];
 
-        const userMessage = prompt.value;
-        if (userMessage.trim() === "") return;
+        document.getElementById('chat-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const prompt = document.getElementById('prompt');
+            const chatLog = document.getElementById('chat-log');
+            const loader = document.getElementById('loader');
+            const askButton = document.getElementById('ask-button');
 
-        // Display user message in chat log
-        chatLog.innerHTML += `<div class="bg-gray-700 p-2 rounded mb-2"><strong>You:</strong> ${userMessage}</div>`;
-        prompt.value = "";
+            const userMessage = prompt.value;
+            if (userMessage.trim() === "") return;
 
-        // Show loader and disable input
-        loader.classList.remove('hidden');
-        prompt.disabled = true;
-        askButton.disabled = true;
+            // Append user message to conversation history
+            conversationHistory.push({
+                "text": userMessage,
+                "role": "user"
+            });
 
-        fetch('{{ route("getAiResponse") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ prompt: userMessage })
-        })
-        .then(response => response.json())
-        .then(data => {
-            // Hide loader and enable input
-            loader.classList.add('hidden');
-            prompt.disabled = false;
-            askButton.disabled = false;
+            // Display user message in chat log
+            chatLog.innerHTML += `<div class="bg-gray-700 p-2 rounded mb-2"><strong>You:</strong> ${userMessage}</div>`;
+            prompt.value = "";
 
-            // Display AI response in chat log
-            chatLog.innerHTML += `<div class="bg-gray-600 p-2 rounded mb-2"><strong>AI:</strong> ${data.ai_response}</div>`;
+            // Show loader and disable input
+            loader.classList.remove('hidden');
+            prompt.disabled = true;
+            askButton.disabled = true;
 
-            // Scroll to the bottom of the chat log
-            chatLog.scrollTop = chatLog.scrollHeight;
-        })
-        .catch(error => {
-            // Hide loader and enable input
-            loader.classList.add('hidden');
-            prompt.disabled = false;
-            askButton.disabled = false;
+            fetch('{{ route("getAiResponse") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ messages: conversationHistory })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loader and enable input
+                loader.classList.add('hidden');
+                prompt.disabled = false;
+                askButton.disabled = false;
 
-            console.error('Error:', error);
+                // Append AI response to conversation history
+                conversationHistory.push({
+                    "text": data.ai_response,
+                    "role": "assistant"
+                });
+
+                // Display AI response in chat log
+                chatLog.innerHTML += `<div class="bg-gray-600 p-2 rounded mb-2"><strong>AI:</strong> ${data.ai_response}</div>`;
+
+                // Scroll to the bottom of the chat log
+                chatLog.scrollTop = chatLog.scrollHeight;
+            })
+            .catch(error => {
+                // Hide loader and enable input
+                loader.classList.add('hidden');
+                prompt.disabled = false;
+                askButton.disabled = false;
+
+                console.error('Error:', error);
+            });
         });
-    });
 
-    // Set dark mode class on body
-    document.body.classList.add('dark');
+        // Set dark mode class on body
+        document.body.classList.add('dark');
+    });
 </script>
 @endpush

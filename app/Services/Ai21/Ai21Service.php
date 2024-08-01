@@ -23,13 +23,14 @@ class Ai21Service implements Ai21ServiceContract
      * This method call ai21 v1 api by sending prompt and endpoint that will
      * append to the base url and return the generated reponse by ai21-j2-mid.
      *
-     * @param string $prompt     <String by user represents a question promopt>
+     * @param mixed $prompt      <String by user represents a question promopt>
      * @param string $model_type <Ai Model Type>
      *
      * @return string
      */
-    public function generateResponse(string $prompt, string $model_type = "j2-mid"): string
+    public function generateResponse(mixed $prompt, string $model_type = "j2-mid"): string
     {
+        dd($prompt);
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . config("ai21.api-key"),
             'Content-Type' => 'application/json',
@@ -49,20 +50,5 @@ class Ai21Service implements Ai21ServiceContract
         }
 
         throw new EmptyResponseException();
-    }
-
-
-    /**
-     * This method call chat ai21 v1 api by sending prompt and endpoint that will
-     * append to the base url and return the generated reponse by ai21-j2-mid.
-     *
-     * @param array  $prompt     < Array of Prompts>
-     * @param string $model_type <Ai Model Type>
-     *
-     * @return array
-     */
-    public function chat(array $prompt, string $model_type = "j2-mid"): array
-    {
-        return [];
     }
 }
