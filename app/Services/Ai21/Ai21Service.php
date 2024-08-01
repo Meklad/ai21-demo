@@ -1,22 +1,31 @@
 <?php
 
+/**
+ * Ai21 Base Service.
+ *
+ * @php      8.3
+ * @category Ai_Inttegration
+ * @package  Ai21Integration
+ * @author   Owllog <ahmed.meklad.news@gmail.com>
+ * @license  GNU-GPL <https://www.gnu.org/licenses/gpl-3.0.html>
+ * @link     Meklad <https://github.com/meklad>
+ */
+
 namespace App\Services\Ai21;
 
 use App\Services\Ai21\Contracts\Ai21ServiceContract;
 use App\Services\Ai21\Exceptions\EmptyResponseException;
 use Illuminate\Support\Facades\Http;
 
-/**
- * ai21 Base Service.
- */
 class Ai21Service implements Ai21ServiceContract
 {
     /**
      * This method call ai21 v1 api by sending prompt and endpoint that will
      * append to the base url and return the generated reponse by ai21-j2-mid.
      *
-     * @param string $prompt
-     * @param string $model_type
+     * @param string $prompt     <String by user represents a question promopt>
+     * @param string $model_type <Ai Model Type>
+     *
      * @return string
      */
     public function generateResponse(string $prompt, string $model_type = "j2-mid"): string
@@ -39,6 +48,21 @@ class Ai21Service implements Ai21ServiceContract
             return $body["completions"][0]["data"]["text"];
         }
 
-        throw new EmptyResponseException;
+        throw new EmptyResponseException();
+    }
+
+
+    /**
+     * This method call chat ai21 v1 api by sending prompt and endpoint that will
+     * append to the base url and return the generated reponse by ai21-j2-mid.
+     *
+     * @param array  $prompt     < Array of Prompts>
+     * @param string $model_type <Ai Model Type>
+     *
+     * @return array
+     */
+    public function chat(array $prompt, string $model_type = "j2-mid"): array
+    {
+        return [];
     }
 }
