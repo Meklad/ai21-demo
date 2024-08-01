@@ -8,7 +8,7 @@
  * @package  Ai21Integration
  * @author   Owllog <ahmed.meklad.news@gmail.com>
  * @license  GNU-GPL <https://www.gnu.org/licenses/gpl-3.0.html>
- * @link     Meklad <https://github.com/meklad>
+ * @link     Meklad <https://github.com/Meklad/ai21-demo>
  */
 
 namespace App\Services\Ai21;

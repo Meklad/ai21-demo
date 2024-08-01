@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('chats', function (Blueprint $table) {
             $table->id();
             $table->string("title");
+            $table->string("ai_service");
+            $table->string("model_type");
             $table->unsignedBigInteger('user_id');
             $table->softDeletes();
             $table->timestamps();

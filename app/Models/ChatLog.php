@@ -20,7 +20,7 @@ class ChatLog extends Model
         'text',
         'role',
         'chat_id',
-        'user_id',
+        'user_id'
     ];
 
     /**

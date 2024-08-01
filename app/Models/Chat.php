@@ -19,6 +19,8 @@ class Chat extends Model
      */
     protected $fillable = [
         'title',
+        'ai_service',
+        'model_type',
         'user_id'
     ];
 
