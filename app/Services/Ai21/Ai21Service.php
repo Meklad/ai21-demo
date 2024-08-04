@@ -23,30 +23,29 @@ class Ai21Service implements Ai21ServiceContract
      * This method call ai21 v1 api by sending prompt and endpoint that will
      * append to the base url and return the generated reponse by ai21-j2-mid.
      *
-     * @param mixed $prompt      <String by user represents a question promopt>
+     * @param array $prompt      <String by user represents a question promopt>
      * @param string $model_type <Ai Model Type>
      *
-     * @return string
+     * @return array
      */
-    public function generateResponse(mixed $prompt, string $model_type = "j2-mid"): string
+    public function generateResponse(array $prompt, string $model_type = "j2-mid"): array
     {
         dd($prompt);
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . config("ai21.api-key"),
             'Content-Type' => 'application/json',
-        ])->post(config("ai21.v1-url") . $model_type . "/complete", [
-            'prompt' => $prompt,
+        ])->post(config("ai21.v1-url") . $model_type . "/chat", [
             'numResults' => 1,
-            'maxTokens' => 800,
             'temperature' => 0.7,
-            'topP' => 1,
-            'stopSequences' => []
+            'messages' => $prompt,
+            'system' => 'You are an AI assistant for business research. Your responses should be informative and concise.',
         ]);
 
         $body = $response->json();
 
-        if(isset($body["completions"][0]["data"]["text"])) {
-            return $body["completions"][0]["data"]["text"];
+        dd($body);
+        if(isset($body["completions"][0]["data"])) {
+            return $body["completions"][0]["data"];
         }
 
         throw new EmptyResponseException();

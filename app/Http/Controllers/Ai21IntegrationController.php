@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Response;
 use Illuminate\Http\JsonResponse;
-use App\Services\Ai21\Ai21Service;
+use App\Services\Chat\ChatService;
 use Illuminate\Contracts\View\View;
 use App\Http\Requests\CreatePromptRequest;
+use App\Models\Chat;
 
 /**
  * This controller contains all users actions that deal with ai21 integration.
@@ -16,9 +17,9 @@ class Ai21IntegrationController extends Controller
     /**
      * OpenAiIntegrationController Constructor.
      *
-     * @param OpenAIService $openAIService
+     * @param ChatService $chatService
      */
-    public function __construct(private Ai21Service $openAIService){}
+    public function __construct(private ChatService $chatService){}
 
     /**
      * Return prompt view to main dashboard view.
@@ -40,10 +41,25 @@ class Ai21IntegrationController extends Controller
      */
     public function getAiResponse(CreatePromptRequest $request): JsonResponse
     {
+        $chat = null;
+
+        if(isset($request->chat_id)) {
+            $chat = Chat::find($request->chat_id);
+        }
+
+        $ai_response = $this->chatService->createOrUpdate(
+            prompt: $request->prompt,
+            user: auth()->user(),
+            title: $chat != null ? $chat->title : "New Chat",
+            ai_service: "ai21",
+            model_type: "j2-ultra",
+            chat: $chat
+        );
+
         return response()->json([
             "success" => true,
             "status" => Response::HTTP_OK,
-            "ai_response" => $this->openAIService->generateResponse($request->prompt)
+            "ai_response" => $ai_response
         ], Response::HTTP_OK);
     }
 }

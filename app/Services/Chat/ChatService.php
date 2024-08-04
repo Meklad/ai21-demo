@@ -15,30 +15,71 @@ namespace App\Services\Chat;
 
 use App\Models\Chat;
 use App\Models\User;
-use App\Models\ChatLog;
 use Illuminate\Database\Eloquent\Collection;
+use App\Services\Ai21\Contracts\Ai21ServiceContract;
 use App\Services\Chat\Contracts\ChatServiceContract;
 use App\Services\Chat\Exceptions\EmptyPromptException;
 
 class ChatService implements ChatServiceContract
 {
     /**
-     * This method store new chat and chat logs to the database.
+     * This method create or update chat and chat logs to the database.
+     *
+     * @param Ai21ServiceContract $aiService
+     */
+    public function __construct(public Ai21ServiceContract $aiService){}
+
+    /**
+     * This method create or update chat and chat logs to the database.
      *
      * @param array $prompt
      * @param User $user
-     * @param string $title
+     * @param string|null $title
      * @param string $ai_service
      * @param string $model_type
+     * @param Chat|null $chat
      * @return array
      */
-    public function store(array $prompt, User $user, string $title, string $ai_service = "ai21", string $model_type = "j2-mid"): array
+    public function createOrUpdate(array $prompt, User $user, string $title, string $ai_service = "ai21", string $model_type = "j2-mid", Chat|null $chat = null): array
     {
-        $chat = $this->createChat($title, $ai_service, $model_type, $user);
+        $chat = $this->checkChat(
+            title: $title,
+            ai_service: $ai_service,
+            model_type: $model_type,
+            user: $user,
+            chat: $chat
+        );
+
         $dbPrompt = $this->createChatLog($chat, $prompt, $user);
         $messages = $this->mapPromp($dbPrompt);
+        $payload = [
+            'numResults' => 1,
+            'temperature' => 0.7,
+            'messages' => $messages,
+            'system' => 'You are an AI assistant for business research. Your responses should be informative and concise.',
+        ];
 
-        return [];
+        $aiResponse = $this->aiService->generateResponse(
+            prompt: $payload,
+            model_type: $model_type
+        );
+
+        return $aiResponse;
+    }
+
+    public function checkChat(string $title, string $ai_service, string $model_type, User $user, Chat|null $chat = null): Chat
+    {
+        if($chat == null) {
+            $chat = $this->createChat($title, $ai_service, $model_type, $user);
+            $chat->logs()->create([
+                'text' => "You are an AI assistant for business research. Your responses should be informative and concise.",
+                'role' => "system",
+                'chat_id' => $chat->id,
+                'user_id' => $user->id
+            ]);
+        }
+
+        return $chat;
     }
 
     /**
